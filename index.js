@@ -16,7 +16,17 @@ async function fetchRandomNews() {
 
         const data = await response.json();
 
-        return data.articles;
+        if (data.articles) {
+
+            return data.articles;
+
+        } else {
+
+            console.error("No articles found in the response");
+
+            return [];
+
+        }
 
     } catch(error) {
 
@@ -32,7 +42,7 @@ searchButton.addEventListener('click', async() => {
 
     const query = searchField.value.trim();
 
-    if(query !== "" ) {
+    if (query !== "") {
 
         try {
 
@@ -59,7 +69,17 @@ async function fetchNewsQuery(query) {
 
         const data = await response.json();
 
-        return data.articles;
+        if (data.articles) {
+
+            return data.articles;
+
+        } else {
+            
+            console.error("No articles found for the query");
+
+            return [];
+
+        }
 
     } catch(error) {
 
@@ -75,17 +95,31 @@ function displayBlogs(articles) {
 
     blogContainer.innerHTML = '';
 
+    if (!articles.length) {
+
+        const noResultsMessage = document.createElement("p");
+
+        noResultsMessage.textContent = "No articles found.";
+
+        blogContainer.appendChild(noResultsMessage);
+
+        return;
+
+    }
+
     articles.forEach((article) => {
 
         const blogCard = document.createElement("div");
 
         blogCard.classList.add("blog-card");
 
+
         const img = document.createElement("img");
 
         img.src = article.urlToImage;
 
         img.alt = article.title;
+
 
         const title = document.createElement("h2");
 
@@ -96,6 +130,7 @@ function displayBlogs(articles) {
         : article.title;
 
         title.textContent = truncatedTitle;
+
 
         const description = document.createElement("p");
 
@@ -114,6 +149,7 @@ function displayBlogs(articles) {
 
         blogCard.appendChild(description);
 
+
         blogCard.addEventListener('click', () => {
 
             window.open(article.url, "_blank");
@@ -122,7 +158,7 @@ function displayBlogs(articles) {
 
         blogContainer.appendChild(blogCard);
 
-   });
+    });
 
 }
 
