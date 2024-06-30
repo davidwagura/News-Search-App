@@ -1,4 +1,6 @@
-const apiKey = '44e68ec8657d40a192b51c8287c79951';
+import { config } from './config.js'; 
+
+const apiKey = config.apiKey;
 
 const blogContainer = document.getElementById("blog-container");
 
