@@ -1,181 +1,81 @@
-import { config } from './config.js'; 
+// index.js
 
-const apiKey = config.apiKey;
+// ✅ Use your actual API key from https://gnews.io
+const apiKey = "a5133228fca4e620ba73f22867cede8a"; // Replace "demo" with your real key
 
-const blogContainer = document.getElementById("blog-container");
+document.addEventListener("DOMContentLoaded", () => {
+    const blogContainer = document.getElementById("blog-container");
+    const searchField = document.getElementById("search-input");
+    const searchButton = document.getElementById("search-button");
 
-const searchField = document.getElementById("search-input");
-
-const searchButton = document.getElementById('search-button');
-
-async function fetchRandomNews() {
-
-    try{
-
-        const apiUrl = `https://newsapi.org/v2/top-headlines?country=us&pageSize=10&apiKey=${apiKey}`;
-
-        const response = await fetch(apiUrl);
-
-        const data = await response.json();
-
-        if (data.articles) {
-
-            return data.articles;
-
-        } else {
-
-            console.error("No articles found in the response");
-
-            return [];
-
-        }
-
-    } catch(error) {
-
-        console.error("Error fetching random news", error);
-
-        return[];
-
-    }
-
-};
-
-searchButton.addEventListener('click', async() => {
-
-    const query = searchField.value.trim();
-
-    if (query !== "") {
-
+    async function fetchNews(url) {
         try {
-
-            const articles =  await fetchNewsQuery(query);
-
-            displayBlogs(articles);
-            
+            const response = await fetch(url);
+            const data = await response.json();
+            return data.articles || [];
         } catch (error) {
-            
-            console.log("Error fetching news by query" ,error);
-
-        }
-    }
-
-});
-
-async function fetchNewsQuery(query) {
-
-    try{
-
-        const apiUrl = `https://newsapi.org/v2/everything?q=${query}&pageSize=10&apiKey=${apiKey}`;
-
-        const response = await fetch(apiUrl);
-
-        const data = await response.json();
-
-        if (data.articles) {
-
-            return data.articles;
-
-        } else {
-            
-            console.error("No articles found for the query");
-
+            console.error("Error fetching news", error);
             return [];
+        }
+    }
 
+    function displayArticles(articles) {
+        blogContainer.innerHTML = "";
+
+        if (!articles.length) {
+            blogContainer.innerHTML = "<p>No news articles found.</p>";
+            return;
         }
 
-    } catch(error) {
+        articles.forEach((article) => {
+            const card = document.createElement("div");
+            card.classList.add("blog-card");
 
-        console.error("Error fetching random news", error);
+            const image = document.createElement("img");
+            image.src = article.image || "https://via.placeholder.com/600x400";
+            image.alt = article.title;
 
-        return[];
+            const title = document.createElement("h2");
+            title.textContent = article.title.length > 30
+                ? article.title.slice(0, 30) + "..."
+                : article.title;
 
-    }
+            const desc = document.createElement("p");
+            desc.textContent = article.description?.length > 120
+                ? article.description.slice(0, 120) + "..."
+                : article.description || "No description available.";
 
-};
+            card.appendChild(image);
+            card.appendChild(title);
+            card.appendChild(desc);
 
-function displayBlogs(articles) {
+            card.addEventListener("click", () => {
+                window.open(article.url, "_blank");
+            });
 
-    blogContainer.innerHTML = '';
-
-    if (!articles.length) {
-
-        const noResultsMessage = document.createElement("p");
-
-        noResultsMessage.textContent = "No articles found.";
-
-        blogContainer.appendChild(noResultsMessage);
-
-        return;
-
-    }
-
-    articles.forEach((article) => {
-
-        const blogCard = document.createElement("div");
-
-        blogCard.classList.add("blog-card");
-
-
-        const img = document.createElement("img");
-
-        img.src = article.urlToImage;
-
-        img.alt = article.title;
-
-
-        const title = document.createElement("h2");
-
-        const truncatedTitle = article.title.length > 30 
-
-        ? article.title.slice(0, 30) + " ...." 
-        
-        : article.title;
-
-        title.textContent = truncatedTitle;
-
-
-        const description = document.createElement("p");
-
-        const truncatedDes = article.description.length > 120 
-
-        ? article.description.slice(0, 120) + " ...." 
-        
-        : article.description;
-
-        description.textContent = truncatedDes;
-
-
-        blogCard.appendChild(img);
-
-        blogCard.appendChild(title);
-
-        blogCard.appendChild(description);
-
-
-        blogCard.addEventListener('click', () => {
-
-            window.open(article.url, "_blank");
-            
+            blogContainer.appendChild(card);
         });
+    }
 
-        blogContainer.appendChild(blogCard);
+    async function loadTopHeadlines() {
+        const url = `https://gnews.io/api/v4/top-headlines?lang=en&country=us&max=10&token=${apiKey}`;
+        const articles = await fetchNews(url);
+        displayArticles(articles);
+    }
 
+    async function searchNews(query) {
+        const url = `https://gnews.io/api/v4/search?q=${encodeURIComponent(query)}&lang=en&max=10&token=${apiKey}`;
+        const articles = await fetchNews(url);
+        displayArticles(articles);
+    }
+
+    searchButton.addEventListener("click", () => {
+        const query = searchField.value.trim();
+        if (query) {
+            searchNews(query);
+        }
     });
 
-}
-
-(async () => {
-
-    try {
-
-        const articles = await fetchRandomNews();
-
-        displayBlogs(articles);
-
-    } catch (error) {
-
-        console.error("Error fetching random news",error);
-
-    }
-     
-})();
+    // Load headlines on page load
+    loadTopHeadlines();
+});
