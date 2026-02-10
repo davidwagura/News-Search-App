@@ -1,7 +1,6 @@
 // index.js
 
-// ✅ Use your actual API key from https://gnews.io
-const apiKey = "a5133228fca4e620ba73f22867cede8a"; // Replace "demo" with your real key
+const apiKey = "44e68ec8657d40a192b51c8287c79951"; 
 
 document.addEventListener("DOMContentLoaded", () => {
     const blogContainer = document.getElementById("blog-container");
