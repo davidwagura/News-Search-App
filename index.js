@@ -8,12 +8,32 @@ document.addEventListener("DOMContentLoaded", () => {
     async function fetchNews(endpoint) {
         try {
             const response = await fetch(endpoint);
+            if (!response.ok) {
+                if (response.status === 404) {
+                    throw new Error("API route not found. If running locally, please use 'npm run dev' instead of Live Server.");
+                }
+                throw new Error(`Server error: ${response.status}`);
+            }
+            const contentType = response.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                throw new Error("Received non-JSON response from server.");
+            }
             const data = await response.json();
             return data.articles || [];
         } catch (error) {
-            console.error("Error fetching news", error);
+            console.error("Error fetching news:", error);
+            displayError(error.message);
             return [];
         }
+    }
+
+    function displayError(message) {
+        blogContainer.innerHTML = `
+            <div class="error-container">
+                <p class="error-message">⚠️ ${message}</p>
+                <p class="error-hint">To run the API locally, make sure you are using <code>npm run dev</code> which supports the Vercel serverless functions.</p>
+            </div>
+        `;
     }
 
     function displayArticles(articles) {
